@@ -4,7 +4,12 @@
 
 //*
 // * Bloco de Controle UNICICLO
-//		Com ALUControl separado e saida Branch acrescentada
+//		Ficar o mais idêntico possível ao esquema da diretriz
+//		A ideia é que o bloco controlador fique separado,
+//		Tenha o sinal de Branch,
+//		A origem A da ULA não dependa do Controle,
+//		OrigemB da ULA seja ALUSrc e tenha 1 bit só
+//		Mem2Reg tenha 1 bit somente
 // *
  
 
@@ -42,7 +47,7 @@ always @(*)
 				oBranch					<= 1'b0;
 				oMemRead 				<= 1'b0; 
 				oMem2Reg 				<= 1'b0;
-				oALUOp					<=	
+				//oALUOp					<=	
 				oMemWrite				<= 1'b0;
 				oALUSrc	 				<= 1'b1;
 				oRegWrite				<= 1'b1;
@@ -58,6 +63,7 @@ always @(*)
 				
 					default: // instrucao invalida
 						begin
+							oBranch					<= 1'b0;			
 							oOrigAULA  				<= 2'b00;
 							oOrigBULA 				<= 2'b00;
 							oRegWrite				<= 1'b0;
@@ -71,24 +77,24 @@ always @(*)
 			
 		OPC_AUIPC:
 			begin
-				oOrigAULA  				<= 2'b01;
-				oOrigBULA 				<= 2'b01;
-				oRegWrite				<= 1'b1;
-				oMemWrite				<= 1'b0; 
+				oBranch					<= 1'b0;		
 				oMemRead 				<= 1'b0; 
-				oALUControl				<= OPADD;
-				oMem2Reg 				<= 3'b000;
+				oMem2Reg 				<= 1'b0;
+				oALUOp					<=	2'b00;
+				oMemWrite				<= 1'b0; 
+				oALUSrc 					<= 1'b1;
+				oRegWrite				<= 1'b1;
 			end
 			
 		OPC_STORE:
 			begin
-				oOrigAULA  				<= 2'b00;
-				oOrigBULA 				<= 2'b01;
-				oRegWrite				<= 1'b0;
-				oMemWrite				<= 1'b1; 
+				oBranch					<= 1'b0;			
 				oMemRead 				<= 1'b0; 
-				oALUControl				<= OPADD;
-				oMem2Reg 				<= 3'b000;
+				oMem2Reg 				<= 1'b0;
+				oALUOp					<= 2'b00;
+				oMemWrite				<= 1'b1;
+				oALUSrc					<= 1'b1;
+				oRegWrite				<= 1'b0;
 			end
 		
 		OPC_RTYPE:

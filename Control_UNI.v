@@ -27,7 +27,7 @@ always @(*)
 	case(Opcode)
 		OPC_LOAD:
 			begin
-				oOrigAULA				<= 1'b0;
+				oOrigAULA				<= 2'b00;
 				oOrigBULA 				<= 2'b01;
 				oRegWrite				<= 1'b1;
 				oMemWrite				<= 1'b0; 
@@ -48,7 +48,6 @@ always @(*)
 					FUNCT3_ADD:			oALUControl <= OPADD;
 					FUNCT3_SLL:			oALUControl <= OPSLL;
 					FUNCT3_SLT:			oALUControl <= OPSLT;
-					FUNCT3_SLTU:		oALUControl	<= OPSLTU;
 					FUNCT3_SRL:			oALUControl <= OPSRL;
 					FUNCT3_OR:			oALUControl <= OPOR;
 					FUNCT3_AND:			oALUControl <= OPAND;			
@@ -64,17 +63,6 @@ always @(*)
 							oMem2Reg 				<= 3'b000;
 						end
 				endcase
-			end
-			
-		OPC_AUIPC:
-			begin
-				oOrigAULA  				<= 2'b01;
-				oOrigBULA 				<= 2'b01;
-				oRegWrite				<= 1'b1;
-				oMemWrite				<= 1'b0; 
-				oMemRead 				<= 1'b0; 
-				oALUControl				<= OPADD;
-				oMem2Reg 				<= 3'b000;
 			end
 			
 		OPC_STORE:
@@ -98,7 +86,7 @@ always @(*)
 				oMem2Reg 				<= 3'b000;
 				case (Funct7)
 					FUNCT7_ADD,  // ou qualquer outro 7'b0000000
-					FUNCT7_SUB:	 // SUB ou SRA			
+					FUNCT7_SUB:	 // SUB			
 						case (Funct3)
 							FUNCT3_ADD,
 							FUNCT3_SUB:
@@ -106,8 +94,6 @@ always @(*)
 								else 							 oALUControl <= OPADD;
 							FUNCT3_SLL:			oALUControl <= OPSLL;
 							FUNCT3_SLT:			oALUControl <= OPSLT;
-							FUNCT3_SLTU:		oALUControl	<= OPSLTU;
-							FUNCT3_SRL:			oALUControl <= OPSRL;
 							FUNCT3_OR:			oALUControl <= OPOR;
 							FUNCT3_AND:			oALUControl <= OPAND;			
 							default: // instrucao invalida

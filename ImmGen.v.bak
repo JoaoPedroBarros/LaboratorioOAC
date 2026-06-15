@@ -22,6 +22,7 @@ always @ (*)
         OPC_BRANCH:
             oImm <= {{20{iInstrucao[31]}}, iInstrucao[7], iInstrucao[30:25], iInstrucao[11:8], 1'b0};
 
+        OPC_AUIPC,
         OPC_LUI:
             oImm <= {iInstrucao[31:12], 12'b0};
 

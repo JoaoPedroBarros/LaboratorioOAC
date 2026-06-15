@@ -4,18 +4,21 @@
 
 //*
 // * Bloco de Controle UNICICLO
-//		Apenas "podado" do arquivo CPU Uniciclo original
+//		"podado", com sinal oBranch acrescentado e Controlador da ULA unificado
+//		Sem definição OrigAULA
+//		Todas as saídas, exceto oALUControl com 1 bit somente
+//		
 // *
  
 
  module Control_UNI(
     input  [6:0]  iInstr, 
-    output [1:0]	oOrigAULA, 
-	 output [1:0]	oOrigBULA, 
+	 output			oBranch,
+	 output 			ALUSrc, 
 	 output			oRegWrite, 
 	 output			oMemWrite, 
 	 output			oMemRead,
-	 output [2:0]	oMem2Reg, 
+	 output 			oMem2Reg, 
 	 output [4:0]  oALUControl
 );
 
@@ -27,8 +30,8 @@ always @(*)
 	case(Opcode)
 		OPC_LOAD:
 			begin
-				oOrigAULA				<= 1'b0;
-				oOrigBULA 				<= 2'b01;
+				oBranch					<= 1'b0;
+				ALUSrc 					<= 1'b1;
 				oRegWrite				<= 1'b1;
 				oMemWrite				<= 1'b0; 
 				oMemRead 				<= 1'b1; 
@@ -38,12 +41,12 @@ always @(*)
 			
 		OPC_OPIMM:
 			begin
-				oOrigAULA  				<= 2'b00;
-				oOrigBULA 				<= 2'b01;
+				oBranch					<= 1'b0;
+				ALUSrc 					<= 1'b1;
 				oRegWrite				<= 1'b1;
 				oMemWrite				<= 1'b0; 
 				oMemRead 				<= 1'b0; 
-				oMem2Reg 				<= 3'b000;
+				oMem2Reg 				<= 1'b0;
 				case (Funct3)
 					FUNCT3_ADD:			oALUControl <= OPADD;
 					FUNCT3_SLL:			oALUControl <= OPSLL;
@@ -55,47 +58,36 @@ always @(*)
 				
 					default: // instrucao invalida
 						begin
-							oOrigAULA  				<= 2'b00;
-							oOrigBULA 				<= 2'b00;
+							oBranch					<= 1'b0;
+							ALUSrc 					<= 1'b0;
 							oRegWrite				<= 1'b0;
 							oMemWrite				<= 1'b0; 
 							oMemRead 				<= 1'b0; 
 							oALUControl				<= OPNULL;
-							oMem2Reg 				<= 3'b000;
+							oMem2Reg 				<= 1'b0;
 						end
 				endcase
 			end
 			
-		OPC_AUIPC:
-			begin
-				oOrigAULA  				<= 2'b01;
-				oOrigBULA 				<= 2'b01;
-				oRegWrite				<= 1'b1;
-				oMemWrite				<= 1'b0; 
-				oMemRead 				<= 1'b0; 
-				oALUControl				<= OPADD;
-				oMem2Reg 				<= 3'b000;
-			end
-			
 		OPC_STORE:
 			begin
-				oOrigAULA  				<= 2'b00;
-				oOrigBULA 				<= 2'b01;
+				oBranch					<= 1'b0;
+				ALUSrc 					<= 1'b1;
 				oRegWrite				<= 1'b0;
 				oMemWrite				<= 1'b1; 
 				oMemRead 				<= 1'b0; 
 				oALUControl				<= OPADD;
-				oMem2Reg 				<= 3'b000;
+				oMem2Reg 				<= 1'b0;
 			end
 		
 		OPC_RTYPE:
 			begin
-				oOrigAULA  				<= 2'b00;
-				oOrigBULA 				<= 2'b00;
+				oBranch					<= 1'b0;
+				ALUSrc 					<= 1'b0;
 				oRegWrite				<= 1'b1;
 				oMemWrite				<= 1'b0; 
 				oMemRead 				<= 1'b0; 
-				oMem2Reg 				<= 3'b000;
+				oMem2Reg 				<= 1'b0;
 				case (Funct7)
 					FUNCT7_ADD,  // ou qualquer outro 7'b0000000
 					FUNCT7_SUB:	 // SUB ou SRA			
@@ -112,43 +104,42 @@ always @(*)
 							FUNCT3_AND:			oALUControl <= OPAND;			
 							default: // instrucao invalida
 								begin
-									oOrigAULA  				<= 2'b00;
-									oOrigBULA 				<= 2'b00;
+									ALUSrc 					<= 1'b0;
 									oRegWrite				<= 1'b0;
 									oMemWrite				<= 1'b0; 
 									oMemRead 				<= 1'b0; 
 									oALUControl				<= OPNULL;
-									oMem2Reg 				<= 3'b000;
+									oMem2Reg 				<= 1'b0;
 								end
 						endcase
 				endcase
 			end
 		OPC_LUI:
 			begin
-				oOrigAULA  				<= 2'b00;
-				oOrigBULA 				<= 2'b01;
+				oBranch					<= 1'b0;
+				ALUSrc 					<= 1'b1;
 				oRegWrite				<= 1'b1;
 				oMemWrite				<= 1'b0; 
 				oMemRead 				<= 1'b0; 
 				oALUControl				<= OPLUI;
-				oMem2Reg 				<= 3'b000;
+				oMem2Reg 				<= 1'b0;
 			end
 			
 		OPC_BRANCH:
 			begin
-				oOrigAULA  				<= 2'b00;
-				oOrigBULA 				<= 2'b00;
+				oBranch					<= 1'b1;
+				ALUSrc 					<= 1'b0;
 				oRegWrite				<= 1'b0;
 				oMemWrite				<= 1'b0; 
 				oMemRead 				<= 1'b0; 
 				oALUControl				<= OPADD;
-				oMem2Reg 				<= 3'b000;
+				oMem2Reg 				<= 1'b0;
 			end
 			
 		OPC_JALR:
 			begin	
-				oOrigAULA  				<= 2'b00;
-				oOrigBULA 				<= 2'b00;
+				oBranch					<= 1'b0;
+				ALUSrc 				<= 1'b0;
 				oRegWrite				<= 1'b1;
 				oMemWrite				<= 1'b0; 
 				oMemRead 				<= 1'b0; 
@@ -158,8 +149,8 @@ always @(*)
 		
 		OPC_JAL:
 			begin
-				oOrigAULA  				<= 2'b00;
-				oOrigBULA 				<= 2'b00;
+				oBranch					<= 1'b0;
+				ALUSrc 					<= 1'b0;
 				oRegWrite				<= 1'b1;
 				oMemWrite				<= 1'b0; 
 				oMemRead 				<= 1'b0; 
@@ -169,13 +160,13 @@ always @(*)
 			      
 		default: // instrucao invalida
         begin
-				oOrigAULA  				<= 2'b00;
-				oOrigBULA 				<= 2'b00;
+				oBranch					<= 1'b0;
+				ALUSrc 					<= 1'b0;
 				oRegWrite				<= 1'b0;
 				oMemWrite				<= 1'b0; 
 				oMemRead 				<= 1'b0; 
 				oALUControl				<= OPNULL;
-				oMem2Reg 				<= 3'b000;
+				oMem2Reg 				<= 1'b0;
         end
 		  
 	endcase

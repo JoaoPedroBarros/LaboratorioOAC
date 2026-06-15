@@ -312,3 +312,4 @@ set_global_assignment -name VERILOG_FILE Control_UNI.v
 set_global_assignment -name VERILOG_FILE Control_UNI_MaisVerossimel.v
 set_global_assignment -name VERILOG_FILE ALUControl.v
 set_global_assignment -name VERILOG_FILE Control_UNI_V2.v
+set_global_assignment -name VERILOG_FILE Control_UNI_V3.v
