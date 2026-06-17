@@ -14,6 +14,7 @@ localparam
     OPSLT = 5'd5,
     OPSLL = 5'd7,
     OPLUI = 5'd10,
+	 OPNULL = 5'd31,
 
 /* Opcodes */
     OPC_LOAD   = 7'b0000011, // lw

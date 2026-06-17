@@ -1,169 +1,183 @@
-`ifndef PARAM
-	`include "../Parametros_Red.v"
+`ifndef PARAM_RED
+    `include "../Parametros_Red.v"
 `endif
 
-//*
-// * Bloco de Controle UNICICLO
-//		Apenas "podado" do arquivo CPU Uniciclo original
-// *
- 
+module Control_UNI(
+    input  logic [31:0] iInstr,
+    input  logic        iBranchZero,
 
- module Control_UNI(
-    input  [6:0]  iInstr, 
-    output [1:0]	oOrigAULA, 
-	 output [1:0]	oOrigBULA, 
-	 output			oRegWrite, 
-	 output			oMemWrite, 
-	 output			oMemRead,
-	 output [2:0]	oMem2Reg, 
-	 output [4:0]  oALUControl
+    output logic        oBranch,
+    output logic        ALUSrc,
+    output logic        oRegWrite,
+    output logic        oMemWrite,
+    output logic        oMemRead,
+    output logic [1:0] oMem2Reg,
+    output logic [1:0]  oOrigPC,
+    output logic [4:0]  oALUControl
 );
 
-wire [6:0]  Opcode 	= iInstr[ 6: 0];
-wire [2:0]  Funct3	= iInstr[14:12];
-wire [6:0]  Funct7	= iInstr[31:25];	
+    logic [6:0] Opcode;
+    logic [2:0] Funct3;
+    logic [6:0] Funct7;
 
-always @(*)
-	case(Opcode)
-		OPC_LOAD:
-			begin
-				oOrigAULA				<= 2'b00;
-				oOrigBULA 				<= 2'b01;
-				oRegWrite				<= 1'b1;
-				oMemWrite				<= 1'b0; 
-				oMemRead 				<= 1'b1; 
-				oALUControl				<= OPADD;
-				oMem2Reg 				<= 3'b010;
-			end
-			
-		OPC_OPIMM:
-			begin
-				oOrigAULA  				<= 2'b00;
-				oOrigBULA 				<= 2'b01;
-				oRegWrite				<= 1'b1;
-				oMemWrite				<= 1'b0; 
-				oMemRead 				<= 1'b0; 
-				oMem2Reg 				<= 3'b000;
-				case (Funct3)
-					FUNCT3_ADD:			oALUControl <= OPADD;
-					FUNCT3_SLL:			oALUControl <= OPSLL;
-					FUNCT3_SLT:			oALUControl <= OPSLT;
-					FUNCT3_SRL:			oALUControl <= OPSRL;
-					FUNCT3_OR:			oALUControl <= OPOR;
-					FUNCT3_AND:			oALUControl <= OPAND;			
-				
-					default: // instrucao invalida
-						begin
-							oOrigAULA  				<= 2'b00;
-							oOrigBULA 				<= 2'b00;
-							oRegWrite				<= 1'b0;
-							oMemWrite				<= 1'b0; 
-							oMemRead 				<= 1'b0; 
-							oALUControl				<= OPNULL;
-							oMem2Reg 				<= 3'b000;
-						end
-				endcase
-			end
-			
-		OPC_STORE:
-			begin
-				oOrigAULA  				<= 2'b00;
-				oOrigBULA 				<= 2'b01;
-				oRegWrite				<= 1'b0;
-				oMemWrite				<= 1'b1; 
-				oMemRead 				<= 1'b0; 
-				oALUControl				<= OPADD;
-				oMem2Reg 				<= 3'b000;
-			end
-		
-		OPC_RTYPE:
-			begin
-				oOrigAULA  				<= 2'b00;
-				oOrigBULA 				<= 2'b00;
-				oRegWrite				<= 1'b1;
-				oMemWrite				<= 1'b0; 
-				oMemRead 				<= 1'b0; 
-				oMem2Reg 				<= 3'b000;
-				case (Funct7)
-					FUNCT7_ADD,  // ou qualquer outro 7'b0000000
-					FUNCT7_SUB:	 // SUB			
-						case (Funct3)
-							FUNCT3_ADD,
-							FUNCT3_SUB:
-								if(Funct7==FUNCT7_SUB)   oALUControl <= OPSUB;
-								else 							 oALUControl <= OPADD;
-							FUNCT3_SLL:			oALUControl <= OPSLL;
-							FUNCT3_SLT:			oALUControl <= OPSLT;
-							FUNCT3_OR:			oALUControl <= OPOR;
-							FUNCT3_AND:			oALUControl <= OPAND;			
-							default: // instrucao invalida
-								begin
-									oOrigAULA  				<= 2'b00;
-									oOrigBULA 				<= 2'b00;
-									oRegWrite				<= 1'b0;
-									oMemWrite				<= 1'b0; 
-									oMemRead 				<= 1'b0; 
-									oALUControl				<= OPNULL;
-									oMem2Reg 				<= 3'b000;
-								end
-						endcase
-				endcase
-			end
-		OPC_LUI:
-			begin
-				oOrigAULA  				<= 2'b00;
-				oOrigBULA 				<= 2'b01;
-				oRegWrite				<= 1'b1;
-				oMemWrite				<= 1'b0; 
-				oMemRead 				<= 1'b0; 
-				oALUControl				<= OPLUI;
-				oMem2Reg 				<= 3'b000;
-			end
-			
-		OPC_BRANCH:
-			begin
-				oOrigAULA  				<= 2'b00;
-				oOrigBULA 				<= 2'b00;
-				oRegWrite				<= 1'b0;
-				oMemWrite				<= 1'b0; 
-				oMemRead 				<= 1'b0; 
-				oALUControl				<= OPADD;
-				oMem2Reg 				<= 3'b000;
-			end
-			
-		OPC_JALR:
-			begin	
-				oOrigAULA  				<= 2'b00;
-				oOrigBULA 				<= 2'b00;
-				oRegWrite				<= 1'b1;
-				oMemWrite				<= 1'b0; 
-				oMemRead 				<= 1'b0; 
-				oALUControl				<= OPADD;
-				oMem2Reg 				<= 3'b001;
-			end
-		
-		OPC_JAL:
-			begin
-				oOrigAULA  				<= 2'b00;
-				oOrigBULA 				<= 2'b00;
-				oRegWrite				<= 1'b1;
-				oMemWrite				<= 1'b0; 
-				oMemRead 				<= 1'b0; 
-				oALUControl				<= OPADD;
-				oMem2Reg 				<= 3'b001;
-			end
-			      
-		default: // instrucao invalida
-        begin
-				oOrigAULA  				<= 2'b00;
-				oOrigBULA 				<= 2'b00;
-				oRegWrite				<= 1'b0;
-				oMemWrite				<= 1'b0; 
-				oMemRead 				<= 1'b0; 
-				oALUControl				<= OPNULL;
-				oMem2Reg 				<= 3'b000;
+    assign Opcode = iInstr[6:0];
+    assign Funct3 = iInstr[14:12];
+    assign Funct7 = iInstr[31:25];
+
+  always @(*)
+    case (Opcode)
+
+        OPC_LOAD: begin
+            oBranch     = 1'b0;
+            ALUSrc      = 1'b1;
+            oRegWrite   = 1'b1;
+            oMemWrite   = 1'b0;
+            oMemRead    = 1'b1;
+            oMem2Reg    = 2'b01;
+            oOrigPC     = 2'b00;
+            oALUControl = OPADD;
         end
-		  
-	endcase
+
+        OPC_STORE: begin
+            oBranch     = 1'b0;
+            ALUSrc      = 1'b1;
+            oRegWrite   = 1'b0;
+            oMemWrite   = 1'b1;
+            oMemRead    = 1'b0;
+            oMem2Reg    = 2'b00;
+            oOrigPC     = 2'b00;
+            oALUControl = OPADD;
+        end
+
+        OPC_OPIMM: begin
+            oBranch   = 1'b0;
+            ALUSrc    = 1'b1;
+            oMemWrite = 1'b0;
+            oMemRead  = 1'b0;
+            oMem2Reg  = 2'b00;
+            oOrigPC   = 2'b00;
+
+            case (Funct3)
+                FUNCT3_ADD: begin
+                    oRegWrite   = 1'b1;
+                    oALUControl = OPADD;
+                end
+
+                FUNCT3_SLL: begin
+                    oRegWrite   = 1'b1;
+                    oALUControl = OPSLL;
+                end
+
+                default: begin
+                    oRegWrite   = 1'b0;
+                    oALUControl = OPNULL;
+                end
+            endcase
+        end
+
+        OPC_RTYPE: begin
+            oBranch   = 1'b0;
+            ALUSrc    = 1'b0;
+            oMemWrite = 1'b0;
+            oMemRead  = 1'b0;
+            oMem2Reg  = 2'b00;
+            oOrigPC   = 2'b00;
+
+            case (Funct3)
+                FUNCT3_ADD: begin
+                    oRegWrite = 1'b1;
+                    if (Funct7 == FUNCT7_SUB)
+                        oALUControl = OPSUB;
+                    else
+                        oALUControl = OPADD;
+                end
+
+                FUNCT3_SLL: begin
+                    oRegWrite   = 1'b1;
+                    oALUControl = OPSLL;
+                end
+
+                FUNCT3_SLT: begin
+                    oRegWrite   = 1'b1;
+                    oALUControl = OPSLT;
+                end
+
+                FUNCT3_OR: begin
+                    oRegWrite   = 1'b1;
+                    oALUControl = OPOR;
+                end
+
+                FUNCT3_AND: begin
+                    oRegWrite   = 1'b1;
+                    oALUControl = OPAND;
+                end
+
+                default: begin
+                    oRegWrite   = 1'b0;
+                    oALUControl = OPNULL;
+                end
+            endcase
+        end
+
+        OPC_BRANCH: begin
+            oBranch     = 1'b1;
+            ALUSrc      = 1'b0;
+            oRegWrite   = 1'b0;
+            oMemWrite   = 1'b0;
+            oMemRead    = 1'b0;
+            oMem2Reg    = 2'b00;
+            oALUControl = OPSUB;
+
+            if (iBranchZero)
+                oOrigPC = 2'b01;
+            else
+                oOrigPC = 2'b00;
+        end
+
+        OPC_LUI: begin
+            oBranch     = 1'b0;
+            ALUSrc      = 1'b1;
+            oRegWrite   = 1'b1;
+            oMemWrite   = 1'b0;
+            oMemRead    = 1'b0;
+            oMem2Reg    = 2'b00;
+            oOrigPC     = 2'b00;
+            oALUControl = OPLUI;
+        end
+
+        OPC_JAL: begin
+            oBranch     = 1'b0;
+            ALUSrc      = 1'b0;
+            oRegWrite   = 1'b1;
+            oMemWrite   = 1'b0;
+            oMemRead    = 1'b0;
+            oMem2Reg    = 2'b00;
+            oOrigPC     = 2'b01;
+            oALUControl = OPADD;
+        end
+
+        OPC_JALR: begin
+            oBranch     = 1'b0;
+            ALUSrc      = 1'b1;
+            oRegWrite   = 1'b1;
+            oMemWrite   = 1'b0;
+            oMemRead    = 1'b0;
+            oMem2Reg    = 2'b10;
+            oOrigPC     = 2'b10;
+            oALUControl = OPADD;
+        end
+
+        default: begin
+            oBranch     = 1'b0;
+            ALUSrc      = 1'b0;
+            oRegWrite   = 1'b0;
+            oMemWrite   = 1'b0;
+            oMemRead    = 1'b0;
+            oMem2Reg    = 1'b0;
+            oOrigPC     = 2'b00;
+            oALUControl = OPNULL;
+        end
+
+    endcase
 
 endmodule
