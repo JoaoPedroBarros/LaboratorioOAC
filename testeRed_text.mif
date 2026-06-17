@@ -4,9 +4,32 @@ ADDRESS_RADIX = HEX;
 DATA_RADIX = HEX;
 CONTENT
 BEGIN
-00000000 : 0fc10197;   % 5:       la gp, UM  # Para simulação no Rars %
-00000001 : 00018193;   % 5:  %
-00000002 : 0001a303;   % 6:       lw t1,0(gp) %
-00000003 : 006282b3;   % 7: LOOP: add t0,t0,t1 %
-00000004 : ffdff06f;   % 8:       j LOOP %
+00000000 : 0001a283;   % 10:     	lw t0, 0(gp)          # t0 = 2 %
+00000001 : 0041a303;   % 11:     	lw t1, 4(gp)          # t1 = 4 %
+00000002 : 00628433;   % 14:     	add s0, t0, t1        # s0 = 2 + 4 = 6 %
+00000003 : 04830e63;   % 17:    	beq t1, s0, ERRO      # 4 == 6? falso, n�o deve pular %
+00000004 : 405304b3;   % 20:     	sub s1, t1, t0        # s1 = 4 - 2 = 2 %
+00000005 : 0062f933;   % 23:     	and s2, t0, t1        # s2 = 2 & 4 = 0 %
+00000006 : 0062e9b3;   % 26:     	or s3, t0, t1         # s3 = 2 | 4 = 6 %
+00000007 : 0062aa33;   % 29:     	slt s4, t0, t1        # s4 = 1, pois 2 < 4 %
+00000008 : 00a28a93;   % 32:     	addi s5, t0, 10       # s5 = 2 + 10 = 12 %
+00000009 : 00531533;   % 35:     	sll a0, t1, t0        # a0 = 4 << 2 = 16 %
+0000000a : 00329593;   % 38:     	slli a1, t0, 3        # a1 = 2 << 3 = 16 %
+0000000b : 12345637;   % 41:     	lui a2, 0x12345       # a2 = 0x12345000 %
+0000000c : 0081a423;   % 44:     	sw s0, 8(gp)          # mem[gp + 8] = 6, ou seja, c = 6 %
+0000000d : 0081a683;   % 47:     	lw a3, 8(gp)          # a3 = 6 %
+0000000e : 00868463;   % 50:     	beq a3, s0, BEQ_OK    # 6 == 6? verdadeiro, deve pular %
+0000000f : 06300713;   % 52:     	addi a4, zero, 99     # se executar, BEQ falhou %
+00000010 : 00100793;   % 55:     	addi a5, zero, 1      # a5 = 1 indica que BEQ funcionou %
+00000011 : 008000ef;   % 58:     	jal ra, JAL_OK        # pula para JAL_OK e salva retorno em ra %
+00000012 : 06300813;   % 60:     		addi a6, zero, 99     # se executar, JAL falhou %
+00000013 : 00100813;   % 63:     	addi a6, zero, 1      # a6 = 1 indica que JAL funcionou %
+00000014 : 004003b7;   % 66:     	lui t2, 0x00400       # t2 = 0x00400000 %
+00000015 : 07838393;   % 67: 	addi t2, t2, 0x078    # t2 = 0x00400078 %
+00000016 : 00038067;   % 68: 	jalr zero, 0(t2) %
+00000017 : 06300893;   % 70:     	addi a7, zero, 99     # se executar, JALR falhou %
+00000018 : 00100893;   % 73:     	addi a7, zero, 1      # a7 = 1 indica que JALR funcionou %
+00000019 : 0000006f;   % 76:     	jal zero, FIM         # loop infinito %
+0000001a : fff00f93;   % 79:     	addi t6, zero, -1     # t6 = 0xFFFFFFFF indica erro %
+0000001b : ffdff06f;   % 80:     	jal zero, ERRO %
 END;
